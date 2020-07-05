@@ -1,10 +1,10 @@
 # Bleichenbacher Attack
 ## Introduction : 
-BleichenBacker Attack is an Adaptive Chosen Ciphertext Attack against protocols based on the RSA encryption standard. It is an interesting attack due to real-life implications(HTTPS- SSL/TLS). This attack is based on the assumption that the attacker has access to an oracle such that, for any chosen-ciphertext c, it responds whether the message is PKCS #1 V1.5 conforming or not. Based on the server’s reply, the attacker will choose the subsequent queries and gain information about the complete decryption.
+BleichenBacker Attack is an Adaptive Chosen Ciphertext Attack against protocols based on the RSA encryption standard. It is an interesting attack due to real-life implications(HTTPS- SSL/TLS). This attack is based on the assumption that the attacker has access to an oracle such that, for any chosen-ciphertext c, it responds whether the message is PKCS #1 V 1.5 conforming or not. Based on the server’s reply, the attacker will choose the subsequent queries and gain information about the complete decryption.
 
 ## Background Theory :
 
-### PKCS#1 V1.5 Block format for Encryption :
+### PKCS#1 V 1.5 Block format for Encryption :
 The encoding message of a message M in this format is as follows:
 
 **PKCS1(M) = 0x00 | 0x02 | [non zero padding bytes] | 0x00 | [M]**
@@ -30,18 +30,45 @@ The value s can be found with a non-negligible probability. After finding the va
 The attack is said to be adaptive in the sense that future queries are constructed based upon the information obtained from the previous server replies. Thus, the rest of the attack sends queries with carefully chosen values of s and narrows the range of values it can take, up to a point when an interval of the form [𝑎, 𝑎] is found. Finally, the byte string value of a is the plaintext that we are interested in.
 
 
-### Attack Description( Mathematics involved):
+### Attack Description( Mathematics involved ):
 
 As stated above, there are three phases of the attack (four if we also account for the blinding step, but in this implementation, it is assumed that the attacker has intercepted the ciphertext of a PKCS #1 encoded message, so blinding is not necessary). 
 Let 𝐵 = 2<sup>8(𝑘−2)</sup> be the length of the message, in bits, without the first 2 bytes; k is the length of the RSA modulus, in bytes (256 / 8 = 32, in this implementation). Since 𝑚𝑠 is PKCS conforming: 2𝐵 ≤ 𝑚𝑠(𝑚𝑜𝑑 𝑛) < 3𝐵. Let 𝑀 = {[2𝐵, 3𝐵 − 1]} be the initial set of intervals (the interval represents the broadest range of possible s-values).
 
 **1. Searching :**
  We start the search by trying to find the smallest 𝑠<sub>1 </sub> ≥ 𝑛 / 3⋅𝐵, such that 𝑐𝑠<sub>1 </sub><sup>𝑒</sup> (𝑚𝑜𝑑 𝑛) is PKCS conforming. Next, we continue the search based upon the size of M (i.e. the number of intervals in M). 
-If M contains at least 2 intervals, then look for the smallest 𝑠<sub>i </sub>≥ 𝑠<sub>i </sub>−1 such that 𝑐𝑠<sub>i </sub><sup>𝑒</sup> (𝑚𝑜𝑑 𝑛) is PKCS conforming. Otherwise, if M contains exactly one interval of the form [𝑎, 𝑏], then use the previously calculated s-value to derive lower and upper bounds for the next s-value, i.e choose until we arrive at a PKCS conforming ciphertext 𝑐𝑠i<sup>𝑒</sup> (𝑚𝑜𝑑 𝑛).
+If M contains at least 2 intervals, then look for the smallest 𝑠<sub>i </sub>≥ 𝑠<sub>i </sub>−1 such that 𝑐𝑠<sub>i </sub><sup>𝑒</sup> (𝑚𝑜𝑑 𝑛) is PKCS conforming. Otherwise, if M contains exactly one interval of the form [𝑎, 𝑏], then use the previously calculated s-value to derive lower and upper bounds for the next s-value, i.e choose until we arrive at a PKCS conforming ciphertext 𝑐𝑠<sub>i</sub><sup>𝑒</sup> (𝑚𝑜𝑑 𝑛).
 
 <p align="center">
   <img src="https://github.com/Akhi-99/Bleichenbacher-Attack/blob/master/Images/2020-06-05%20(2).png">
 </p>
+
+**2. Narrowing the set of solutions:**
+    After finding the new value 𝑠<sub>i</sub>, update the set M of intervals as follows:
+<p align="center">
+  <img src="https://github.com/Akhi-99/Bleichenbacher-Attack/blob/master/Images/2020-06-05%20(3).png">
+</p>	
+
+**3. Checking for solution:**
+ If M only contains one interval of the form [𝑎, 𝑎], then we have reached the solution. 𝑚 ← 𝑎 (𝑚𝑜𝑑 𝑛) is the complete decryption of the intercepted ciphertext. Otherwise, repeat the steps above.
+ 
+## Implementation :
+The open SSL toolkit provides flexible command-line tools to perform cryptographic operations. 
+We will generate a real 1024 bit RSA key-pair using the genrsa command as follows :
+	
+	openssl genrsa -out key 1024
+
+The above command will generate an RSA private key of 1024 bits long modulus. The public exponent (e) generally preferred is 65537. The output containing modulus (n), public exponent, private exponent, and other information is written to the key file
+
+	openssl pkey -in key -text
+	
+**Input :** M is converted to hex and encoded as per PKCS#1 v1.5 format.<br>
+**Output :** After running the code, the attack happens as per the explanation given above and then we will get the message in PKCS#1 v1.5 format. If we unpad the part after 00, we will get the original message(M).
+
+**Note :** An integral check at the receiver end immediately after decryption is a good idea to avoid these kinds of attacks.
+
+
+ 
 
 
 
