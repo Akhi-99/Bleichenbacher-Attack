@@ -1,6 +1,6 @@
 # Bleichenbacher Attack
 ## Introduction : 
-BleichenBacker Attack is an Adaptive Chosen Ciphertext Attack against protocols based on the RSA encryption standard. It is an interesting attack due to real-life implications(HTTPS- SSL/TLS). This attack is based on the assumption that the attacker has access to an oracle such that, for any chosen-ciphertext c, it responds whether the message is PKCS #1 V 1.5 conforming or not. Based on the server’s reply, the attacker will choose the subsequent queries and gain information about the complete decryption.
+Bleichenbacher Attack is an Adaptive Chosen Ciphertext Attack against protocols based on the RSA encryption standards. It is an interesting attack due to real-life implications (HTTPS- SSL/TLS). This attack is based on the assumption that the attacker has access to an oracle such that, for any chosen-ciphertext c, it responds whether the decrypted message is PKCS #1 V 1.5 conforming or not. Based on the server’s reply, the attacker will choose the subsequent queries and gain information about the complete decryption.
 
 ## Background Theory :
 
