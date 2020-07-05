@@ -35,7 +35,7 @@ The attack is said to be adaptive in the sense that future queries are construct
 As stated above, there are three phases of the attack (four if we also account for the blinding step, but in this implementation, it is assumed that the attacker has intercepted the ciphertext of a PKCS #1 encoded message, so blinding is not necessary). 
 Let 𝐵 = 2<sup>8(𝑘−2)</sup> be the length of the message, in bits, without the first 2 bytes; k is the length of the RSA modulus, in bytes (256 / 8 = 32, in this implementation). Since 𝑚𝑠 is PKCS conforming: 2𝐵 ≤ 𝑚𝑠(𝑚𝑜𝑑 𝑛) < 3𝐵. Let 𝑀 = {[2𝐵, 3𝐵 − 1]} be the initial set of intervals (the interval represents the broadest range of possible s-values).
 
-1. Searching :
+**1. Searching :**
  We start the search by trying to find the smallest 𝑠<sub>1 </sub> ≥ 𝑛 / 3⋅𝐵, such that 𝑐𝑠<sub>1 </sub><sup>𝑒</sup> (𝑚𝑜𝑑 𝑛) is PKCS conforming. Next, we continue the search based upon the size of M (i.e. the number of intervals in M). 
 If M contains at least 2 intervals, then look for the smallest 𝑠<sub>i </sub>≥ 𝑠<sub>i </sub>−1 such that 𝑐𝑠<sub>i </sub><sup>𝑒</sup> (𝑚𝑜𝑑 𝑛) is PKCS conforming. Otherwise, if M contains exactly one interval of the form [𝑎, 𝑏], then use the previously calculated s-value to derive lower and upper bounds for the next s-value, i.e choose until we arrive at a PKCS conforming ciphertext 𝑐𝑠i<sup>𝑒</sup> (𝑚𝑜𝑑 𝑛).
 
